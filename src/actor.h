@@ -1,28 +1,32 @@
-// Credit: https://thatgamesguy.co.uk/cpp-game-dev-7/
 #ifndef HECK_ACTOR_H
 #define HECK_ACTOR_H
 
-#include "component.h"
-#include <glm/vec2.hpp>
 #include <memory>
-#include <utility>
 #include <vector>
 
 namespace nsd {
 class Graphics;
 
+class Action;
+
+class Component;
+
 class Actor {
 public:
-  explicit Actor(const glm::ivec2 &position = glm::ivec2{0});
+  explicit Actor(int speed = 100, int startingEnergy = 0);
 
-  void update(float deltaTime);
+  bool refresh();
+
+  void spendEnergy(int amount);
+
+  std::unique_ptr<Action> turn();
 
   void render(Graphics &graphics) const;
 
-  template <typename T, typename... Tn> std::shared_ptr<T> addComponent(Tn &&...args) {
+  template <typename T, typename... Args> std::shared_ptr<T> addComponent(Args &&...args) {
     static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
 
-    auto newComponent = std::make_shared<T>(*this, std::forward<Tn>(args)...);
+    auto newComponent{std::make_shared<T>(this, std::forward<Args>(args)...)};
 
     // If we already have a component of this type, then replace it.
     for (auto &component : components_) {
@@ -51,14 +55,12 @@ public:
     return nullptr;
   }
 
-  const glm::ivec2 &getPosition() const { return position_; }
-
-  void setPosition(const glm::ivec2 &position) { position_ = position; }
-
 private:
-  glm::ivec2 position_;
+  int speed_;
 
-  std::vector<std::shared_ptr<Component>> components_{};
+  int energy_;
+
+  std::vector<std::shared_ptr<Component>> components_;
 };
 } // namespace nsd
 

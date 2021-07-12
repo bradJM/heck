@@ -72,7 +72,7 @@ Atlas::Atlas(const std::string &texturePath, Graphics &graphics, int elementWidt
   totalElements_ = rows_ * columns_;
 }
 
-SDL_Rect Atlas::getSourceRectangle(int elementId) {
+SDL_Rect Atlas::getSourceRectangle(int elementId) const {
   const auto cursor{elementId % totalElements_};
   const auto sourceX{(cursor % columns_) * elementWidth_};
   const auto sourceY{(cursor / columns_) * elementHeight_};
@@ -80,7 +80,7 @@ SDL_Rect Atlas::getSourceRectangle(int elementId) {
   return SDL_Rect{sourceX, sourceY, elementWidth_, elementHeight_};
 }
 
-SDL_Rect Atlas::getDestinationRectangle(const glm::ivec2 &position) {
+SDL_Rect Atlas::getDestinationRectangle(const glm::ivec2 &position) const {
   return SDL_Rect{position.x * elementWidth_, position.y * elementHeight_, elementWidth_,
                   elementHeight_};
 }

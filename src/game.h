@@ -4,14 +4,15 @@
 #include "actor.h"
 #include "keyboard.h"
 #include <SDL2/SDL2_framerate.h>
-#include <cstdint>
 #include <memory>
 #include <vector>
 
 namespace nsd {
 class Graphics;
 
-class Tileset;
+class Atlas;
+
+class Map;
 
 class Game {
 public:
@@ -31,7 +32,7 @@ public:
 
   void processInput();
 
-  void update();
+  void turn();
 
   void render();
 
@@ -40,15 +41,17 @@ private:
 
   std::unique_ptr<Graphics> graphics_{nullptr};
 
-  std::unique_ptr<Tileset> tileset_{nullptr};
+  std::unique_ptr<Atlas> atlas_{nullptr};
 
-  std::uint32_t ticks_{0};
+  std::unique_ptr<Map> map_{nullptr};
 
   bool isRunning_{true};
 
   Keyboard keyboard_{};
 
-  std::vector<Actor> actors_{};
+  std::vector<std::unique_ptr<Actor>> actors_{};
+
+  size_t currentActor_{0};
 };
 } // namespace nsd
 

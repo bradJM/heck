@@ -1,5 +1,5 @@
 ---
-Checks:          '*,-altera-*,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-type-union-access,-fuchsia-*,-google-readability-namespace-comments,-google-readability-todo,-hicpp-*,-llvm-*,llvm-include-order,-llvmlibc-*,-modernize-use-nodiscard,-modernize-use-trailing-return-type,-readability-magic-numbers'
+Checks:          '*,-altera-*,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-type-union-access,-fuchsia-*,-google-readability-namespace-comments,-google-readability-todo,-hicpp-*,-llvm-*,llvm-include-order,-llvmlibc-*,-misc-non-private-member-variables-in-classes,-modernize-use-nodiscard,-modernize-use-trailing-return-type,-readability-magic-numbers'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '.*'
 FormatStyle:     file

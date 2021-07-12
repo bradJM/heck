@@ -8,15 +8,22 @@
 
 namespace nsd {
 
+struct Tile {
+  int tileId;
+
+  glm::ivec2 position;
+
+  glm::u8vec4 color;
+};
+
 class Tileset {
 public:
-  Tileset(const std::string &texturePath, Graphics &graphics, int tileWidth, int tileHeight);
+  explicit Tileset(Atlas *atlas);
 
-  void blitTile(int tileId, const glm::ivec2 &position, const glm::u8vec4 &color, bool isVisible,
-                bool isExplored, Graphics &graphics);
+  void blitTile(const Tile &tile, bool isVisible, bool isExplored, Graphics &graphics) const;
 
 private:
-  Atlas atlas_;
+  Atlas *atlas_;
 };
 } // namespace nsd
 

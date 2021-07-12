@@ -29,7 +29,7 @@ public:
   void clear();
 
 private:
-  std::uint32_t bits_ = 0;
+  std::uint32_t bits_{0};
 };
 } // namespace nsd
 

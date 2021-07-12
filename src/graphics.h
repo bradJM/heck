@@ -9,8 +9,6 @@
 #include <memory>
 #include <string>
 
-struct SDL_Rect;
-
 namespace nsd {
 struct TextureInfo {
   SDL_Texture *texture{nullptr};
@@ -51,9 +49,9 @@ class Atlas {
 public:
   Atlas(const std::string &texturePath, Graphics &graphics, int elementWidth, int elementHeight);
 
-  SDL_Rect getSourceRectangle(int elementId);
+  SDL_Rect getSourceRectangle(int elementId) const;
 
-  SDL_Rect getDestinationRectangle(const glm::ivec2 &position);
+  SDL_Rect getDestinationRectangle(const glm::ivec2 &position) const;
 
   SDL_Texture *getTexture() const { return textureInfo_.texture; }
 

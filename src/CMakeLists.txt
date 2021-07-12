@@ -4,12 +4,18 @@ add_executable(
   main.cpp
   actor.cpp
   bitmask.cpp
+  bsp_generator.cpp
   game.cpp
   graphics.cpp
   keyboard.cpp
-  keyboard_input_component.cpp
-  sprite_component.cpp
+  map.cpp
   tileset.cpp
+  actions/move_action.cpp
+  actions/pass_action.cpp
+  components/ai_component.cpp
+  components/keyboard_input_component.cpp
+  components/sprite_component.cpp
+  components/transform_component.cpp
 )
 
 set_property(TARGET heck PROPERTY CXX_STANDARD 17)
