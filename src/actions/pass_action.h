@@ -8,7 +8,7 @@ class PassAction : public Action {
 public:
   explicit PassAction(Actor *owner);
 
-  ActionResult perform() override;
+  ActionResult perform(Map &map) override;
 };
 } // namespace nsd
 

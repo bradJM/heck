@@ -9,14 +9,18 @@ class Actor;
 
 class TransformComponent : public Component {
 public:
-  TransformComponent(Actor *owner, const glm::ivec2 &position);
+  TransformComponent(Actor *owner, const glm::ivec2 &position, bool blocksMovement);
 
   const glm::ivec2 &getPosition() const { return position_; }
 
   void setPosition(const glm::ivec2 &position) { position_ = position; }
 
+  bool blocksMovement() const { return blocksMovement_; }
+
 private:
   glm::ivec2 position_;
+
+  bool blocksMovement_;
 };
 } // namespace nsd
 

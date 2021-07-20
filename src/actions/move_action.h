@@ -9,7 +9,7 @@ class MoveAction : public Action {
 public:
   MoveAction(Actor *owner, const glm::ivec2 &direction);
 
-  ActionResult perform() override;
+  ActionResult perform(Map &map) override;
 
 private:
   glm::ivec2 direction_;

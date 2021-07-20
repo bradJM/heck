@@ -7,8 +7,8 @@
 
 namespace nsd {
 Graphics::Graphics() {
-  window_.reset(createWindow(800, 500, 0));
-  renderer_.reset(createRenderer(window_.get(), 800, 500));
+  window_.reset(createWindow(1280, 720, 0));
+  renderer_.reset(createRenderer(window_.get(), 640, 360));
 }
 
 TextureInfo Graphics::loadTexture(const std::string &path) {

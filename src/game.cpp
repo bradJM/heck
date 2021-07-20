@@ -13,14 +13,16 @@
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <memory>
+#include <stdexcept>
 
 namespace nsd {
 constexpr auto fps{60};
 constexpr auto atlasPath{"resources/tilesets/Weiholmir XL Full.png"};
 constexpr auto atlasElementWidth{10};
 constexpr auto atlasElementHeight{10};
-constexpr auto mapWidth{80};
-constexpr auto mapHeight{50};
+constexpr auto mapWidth{50};
+constexpr auto mapHeight{30};
+constexpr auto fovRadius{8};
 
 Game::Game() {
   SDL_Init(SDL_INIT_VIDEO);
@@ -31,20 +33,36 @@ Game::Game() {
 
   graphics_ = std::make_unique<Graphics>();
   atlas_ = std::make_unique<Atlas>(atlasPath, *graphics_, atlasElementWidth, atlasElementHeight);
-  map_ = std::make_unique<Map>(mapWidth, mapHeight, std::make_unique<Tileset>(atlas_.get()));
+  map_ =
+      std::make_unique<Map>(mapWidth, mapHeight, std::make_unique<Tileset>(atlas_.get()), &actors_);
 
   auto generator{BspGenerator{map_.get()}};
-  generator.generate();
+  auto mapInfo{generator.generate()};
+
+  SDL_Log("Generated %d rooms.", mapInfo.generatedRooms);
+
+  SDL_Log("Spawning %d enemies", mapInfo.enemySpawns.size());
+
+  for (const auto &spawn : mapInfo.enemySpawns) {
+    if (!map_->isWalkable(spawn)) {
+      continue;
+    }
+
+    SDL_Log("Spawning enemy at %d,%d", spawn.x, spawn.y);
+
+    auto &enemy{actors_.emplace_back(std::make_unique<Actor>())};
+    enemy->addComponent<TransformComponent>(spawn, true);
+    enemy->addComponent<SpriteComponent>(atlas_.get(), 38, glm::u8vec4{0xCA, 0x5A, 0x2E, 0xFF});
+    enemy->addComponent<AiComponent>();
+  }
+
+  SDL_Log("Spawning player at %d,%d", mapInfo.playerStart.x, mapInfo.playerStart.y);
 
   auto &player{actors_.emplace_back(std::make_unique<Actor>())};
-  player->addComponent<TransformComponent>(glm::ivec2{mapWidth / 2, mapHeight / 2});
-  player->addComponent<SpriteComponent>(atlas_.get(), 92, glm::u8vec4{0xFF, 0xFF, 0x00, 0xFF});
+  player->addComponent<TransformComponent>(mapInfo.playerStart, true);
+  player->addComponent<SpriteComponent>(atlas_.get(), 92, glm::u8vec4{0xDF, 0xD7, 0x85, 0xFF});
   player->addComponent<KeyboardInputComponent>(&keyboard_);
-
-  auto &enemy{actors_.emplace_back(std::make_unique<Actor>())};
-  enemy->addComponent<TransformComponent>(glm::ivec2{(mapWidth / 2) + 5, mapHeight / 2});
-  enemy->addComponent<SpriteComponent>(atlas_.get(), 13, glm::u8vec4{0xFF});
-  enemy->addComponent<AiComponent>();
+  map_->computeFov(player->getComponent<TransformComponent>()->getPosition(), fovRadius);
 }
 
 Game::~Game() {
@@ -93,7 +111,7 @@ void Game::turn() {
   }
 
   while (true) {
-    auto result{action->perform()};
+    auto result{action->perform(*map_)};
 
     // The action failed, so this actor should get another chance to act.
     if (!result.succeeded) {
@@ -111,7 +129,7 @@ void Game::turn() {
   currentActor_ = (currentActor_ + 1) % actors_.size();
 
   // temporary!
-  SDL_Delay(150);
+  SDL_Delay(10);
 }
 
 void Game::render() {
@@ -120,7 +138,11 @@ void Game::render() {
   map_->render(*graphics_);
 
   for (const auto &actor : actors_) {
-    actor->render(*graphics_);
+    const auto &position{actor->getComponent<TransformComponent>()->getPosition()};
+
+    if (map_->isInFov(position)) {
+      actor->render(*graphics_);
+    }
   }
 
   graphics_->present();

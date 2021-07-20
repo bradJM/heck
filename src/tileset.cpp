@@ -7,14 +7,13 @@
 namespace nsd {
 Tileset::Tileset(Atlas *atlas) : atlas_(atlas) {}
 
-void Tileset::blitTile(const Tile &tile, bool isVisible, bool isExplored,
-                       Graphics &graphics) const {
+void Tileset::blitTile(const Tile &tile, Graphics &graphics) const {
   const auto sourceRect{atlas_->getSourceRectangle(tile.tileId)};
   const auto destRect{atlas_->getDestinationRectangle(tile.position)};
 
   // Tiles that are currently visible render at full color, tiles that have been explored render at
   // 50% color, and other tiles are invisible.
-  const auto mod{isVisible ? 1.0F : isExplored ? 0.5F : 0.0F};
+  const auto mod{tile.isVisible ? 1.0F : tile.isExplored ? 0.5F : 0.0F};
   const auto r{static_cast<std::uint8_t>(static_cast<float>(tile.color.r) * mod)};
   const auto g{static_cast<std::uint8_t>(static_cast<float>(tile.color.g) * mod)};
   const auto b{static_cast<std::uint8_t>(static_cast<float>(tile.color.b) * mod)};

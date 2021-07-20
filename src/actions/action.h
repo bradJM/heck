@@ -9,6 +9,8 @@ class Actor;
 
 class Action;
 
+class Map;
+
 struct ActionResult {
   bool succeeded{false};
 
@@ -27,7 +29,7 @@ public:
 
   Action &operator=(Action &&other) = delete;
 
-  virtual ActionResult perform() = 0;
+  virtual ActionResult perform(Map &map) = 0;
 
 protected:
   explicit Action(Actor *owner) : owner_(owner) {}
