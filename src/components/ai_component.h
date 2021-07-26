@@ -7,12 +7,8 @@
 namespace nsd {
 class Action;
 
-class Actor;
-
 class AiComponent : public Component {
 public:
-  explicit AiComponent(Actor *owner);
-
   std::unique_ptr<Action> produceAction() override;
 };
 } // namespace nsd

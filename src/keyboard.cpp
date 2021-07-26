@@ -11,23 +11,30 @@ void Keyboard::onKeyDown(const SDL_KeyboardEvent &event) {
   switch (event.keysym.scancode) {
   case SDL_SCANCODE_UP:
   case SDL_SCANCODE_W:
+  case SDL_SCANCODE_K:
     pressedKeys_.setBit(static_cast<int>(Key::Up));
     break;
 
   case SDL_SCANCODE_DOWN:
   case SDL_SCANCODE_S:
+  case SDL_SCANCODE_J:
     pressedKeys_.setBit(static_cast<int>(Key::Down));
     break;
 
   case SDL_SCANCODE_LEFT:
   case SDL_SCANCODE_A:
+  case SDL_SCANCODE_H:
     pressedKeys_.setBit(static_cast<int>(Key::Left));
     break;
 
   case SDL_SCANCODE_RIGHT:
   case SDL_SCANCODE_D:
+  case SDL_SCANCODE_L:
     pressedKeys_.setBit(static_cast<int>(Key::Right));
     break;
+
+  case SDL_SCANCODE_PERIOD:
+    pressedKeys_.setBit(static_cast<int>(Key::Period));
 
   default:
     break;

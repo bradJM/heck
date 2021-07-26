@@ -1,14 +1,13 @@
 #include "map.h"
-#include "actor.h"
-#include "components/transform_component.h"
+#include "bsp_generator.h"
 #include "graphics.h"
 #include <algorithm>
 #include <utility>
 
 namespace nsd {
-Map::Map(int width, int height, std::unique_ptr<Tileset> tileset,
-         const std::vector<std::unique_ptr<Actor>> *actors)
-    : map_(width, height), tileset_(std::move(tileset)), tiles_(width * height), actors_(actors) {
+constexpr auto fovRange{8};
+
+Map::Map(int width, int height) : map_(width, height), tiles_(width * height) {
   for (auto x{0}; x < width; ++x) {
     for (auto y{0}; y < height; ++y) {
       auto &tile{tiles_[getTileIndex(x, y)]};
@@ -20,6 +19,9 @@ Map::Map(int width, int height, std::unique_ptr<Tileset> tileset,
       tile.color = glm::u8vec4{0x96, 0x3C, 0x3C, 0xFF};
     }
   }
+
+  auto generator{BspGenerator{}};
+  generator.generate(*this);
 }
 
 bool Map::isWalkable(const glm::ivec2 &position) const {
@@ -31,32 +33,36 @@ bool Map::isWalkable(const glm::ivec2 &position) const {
     return false;
   }
 
-  if (!map_.isWalkable(position.x, position.y)) {
-    return false;
-  }
-
-  return std::none_of(actors_->begin(), actors_->end(), [&position](const auto &actor) {
-    const auto &transform{actor->template getComponent<TransformComponent>()};
-
-    return transform->getPosition() == position && transform->blocksMovement();
-  });
+  return map_.isWalkable(position.x, position.y);
 }
 
 bool Map::isInFov(const glm::ivec2 &position) const { return map_.isInFov(position.x, position.y); }
 
-void Map::computeFov([[maybe_unused]] const glm::ivec2 &position, [[maybe_unused]] int radius) {
+void Map::computeFov(const glm::ivec2 &position, int radius) {
   map_.computeFov(position.x, position.y, radius);
 
   for (auto &tile : tiles_) {
     tile.isVisible = map_.isInFov(tile.position.x, tile.position.y);
     tile.isExplored = tile.isExplored || tile.isVisible;
   }
+
+  isFovDirty_ = false;
+}
+
+void Map::turn() {
+  if (isFovDirty_) {
+    computeFov(playerPosition_, fovRange);
+  }
+
+  actors_.turn();
 }
 
 void Map::render(Graphics &graphics) const {
   for (const auto &tile : tiles_) {
-    tileset_->blitTile(tile, graphics);
+    graphics.blitTile(tile);
   }
+
+  actors_.render(graphics);
 }
 
 void Map::dig(int startX, int startY, int endX, int endY) {
@@ -82,12 +88,18 @@ void Map::dig(int startX, int startY, int endX, int endY) {
   }
 }
 
-void Map::createRoom(int startX, int startY, int endX, int endY) {
-  dig(startX, startY, endX, endY);
+void Map::onPlayerAdded(const Actor &player) {
+  playerId_ = player.getId();
+  playerPosition_ = player.getPosition();
+}
 
-  // TODO: Populate rooms.
+void Map::onActorMoved(const Actor &actor) {
+  isFovDirty_ = true;
+
+  if (actor.getId() == playerId_) {
+    playerPosition_ = actor.getPosition();
+  }
 }
 
 size_t Map::getTileIndex(int x, int y) const { return (y * map_.getWidth()) + x; }
-
 } // namespace nsd

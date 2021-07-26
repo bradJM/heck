@@ -1,23 +1,19 @@
 #ifndef HECK_BSP_GENERATOR_H
 #define HECK_BSP_GENERATOR_H
 
-#include "map.h"
 #include <libtcod/bsp.hpp>
 
 namespace nsd {
+class Map;
 
 class BspGenerator : public ITCODBspCallback {
 public:
-  explicit BspGenerator(Map *map_);
+  void generate(Map &map);
 
-  const MapInfo &generate();
-
-  bool visitNode(TCODBsp *node, [[maybe_unused]] void *userData) override;
+  bool visitNode(TCODBsp *node, void *userData) override;
 
 private:
-  Map *map_;
-
-  MapInfo mapInfo_{};
+  int generatedRooms_{0};
 
   int lastCenterX_{0};
 

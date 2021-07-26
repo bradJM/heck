@@ -1,5 +1,7 @@
 #include "bsp_generator.h"
+#include "actor_factory.h"
 #include "map.h"
+#include <glm/vec2.hpp>
 #include <libtcod/mersenne.hpp>
 
 namespace nsd {
@@ -7,21 +9,19 @@ constexpr auto MAX_ROOM_SIZE{12};
 constexpr auto MIN_ROOM_SIZE{6};
 constexpr auto MAX_ROOM_ENEMIES{3};
 
-BspGenerator::BspGenerator(Map *map) : map_(map) {}
-
-const MapInfo &BspGenerator::generate() {
-  auto bsp{TCODBsp{0, 0, map_->getWidth(), map_->getHeight()}};
+void BspGenerator::generate(Map &map) {
+  auto bsp{TCODBsp{0, 0, map.getWidth(), map.getHeight()}};
   bsp.splitRecursive(TCODRandom::getInstance(), 8, MAX_ROOM_SIZE, MIN_ROOM_SIZE, 1.5F, 1.5F);
-  bsp.traverseInvertedLevelOrder(this, nullptr);
-
-  return mapInfo_;
+  bsp.traverseInvertedLevelOrder(this, &map);
 }
 
-bool BspGenerator::visitNode(TCODBsp *node, [[maybe_unused]] void *userData) {
+bool BspGenerator::visitNode(TCODBsp *node, void *userData) {
   if (!node->isLeaf()) {
     return true;
   }
 
+  const auto &actorFactory{ActorFactory::getInstance()};
+  auto *map{static_cast<Map *>(userData)};
   auto *rng{TCODRandom::getInstance()};
   auto width{rng->getInt(MIN_ROOM_SIZE, node->w - 2)};
   auto height{rng->getInt(MIN_ROOM_SIZE, node->h - 2)};
@@ -31,32 +31,44 @@ bool BspGenerator::visitNode(TCODBsp *node, [[maybe_unused]] void *userData) {
   auto endY{startY + height - 1};
   auto centerX{startX + (width / 2)};
   auto centerY{startY + (height / 2)};
-  auto isFirstRoom{mapInfo_.generatedRooms == 0};
+  auto isFirstRoom{generatedRooms_ == 0};
 
-  map_->createRoom(startX, startY, endX, endY);
+  // Carve out a room.
+  map->dig(startX, startY, endX, endY);
 
   if (isFirstRoom) {
-    mapInfo_.playerStart.x = startX + ((endX - startX) / 2);
-    mapInfo_.playerStart.y = startY + ((endY - startY) / 2);
+    auto spawnPosition{glm::ivec2{0}};
+    spawnPosition.x = startX + ((endX - startX) / 2);
+    spawnPosition.y = startY + ((endY - startY) / 2);
+
+    const auto &player{map->addActor(actorFactory.spawnActor("player", spawnPosition))};
+    map->onPlayerAdded(player);
   } else {
     // dig connecting corridors.
-    map_->dig(lastCenterX_, lastCenterY_, centerX, lastCenterY_);
-    map_->dig(centerX, lastCenterY_, centerX, centerY);
+    map->dig(lastCenterX_, lastCenterY_, centerX, lastCenterY_);
+    map->dig(centerX, lastCenterY_, centerX, centerY);
 
     // set spawn positions for enemies
     auto numEnemies{rng->getInt(0, MAX_ROOM_ENEMIES)};
 
     while (numEnemies > 0) {
-      auto x{rng->getInt(startX, endX)};
-      auto y{rng->getInt(startY, endY)};
+      auto spawnPosition{glm::ivec2{0}};
+      spawnPosition.x = rng->getInt(startX, endX);
+      spawnPosition.y = rng->getInt(startY, endY);
 
-      mapInfo_.enemySpawns.emplace_back(x, y);
+      if (map->isWalkable(spawnPosition)) {
+        if (rng->getInt(0, 100) < 80) {
+          map->addActor(actorFactory.spawnActor("imp", spawnPosition));
+        } else {
+          map->addActor(actorFactory.spawnActor("horned demon", spawnPosition));
+        }
+      }
 
       --numEnemies;
     }
   }
 
-  ++mapInfo_.generatedRooms;
+  ++generatedRooms_;
   lastCenterX_ = centerX;
   lastCenterY_ = centerY;
 

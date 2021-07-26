@@ -8,6 +8,7 @@
 #include <glm/vec4.hpp>
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace nsd {
 struct TextureInfo {
@@ -17,6 +18,10 @@ struct TextureInfo {
 
   int height{0};
 };
+
+class Atlas;
+
+struct Tile;
 
 class Graphics {
 public:
@@ -30,8 +35,14 @@ public:
 
   void prepare();
 
+  void blit(const SDL_Rect &sourceRect, const SDL_Rect &destRect, const glm::u8vec4 &color);
+
   void blit(SDL_Texture *texture, const SDL_Rect &sourceRect, const SDL_Rect &destRect,
             const glm::u8vec4 &color);
+
+  void blitSprite(int spriteIndex, const glm::ivec2 &position, const glm::u8vec4 &color);
+
+  void blitTile(const Tile &tile);
 
   void present();
 
@@ -43,11 +54,13 @@ private:
   WindowPtr window_{nullptr, SDL_DestroyWindow};
 
   RendererPtr renderer_{nullptr, SDL_DestroyRenderer};
+
+  std::unique_ptr<Atlas> atlas_{nullptr};
 };
 
 class Atlas {
 public:
-  Atlas(const std::string &texturePath, Graphics &graphics, int elementWidth, int elementHeight);
+  Atlas(const TextureInfo &textureInfo, int elementWidth, int elementHeight);
 
   SDL_Rect getSourceRectangle(int elementId) const;
 
@@ -56,11 +69,11 @@ public:
   SDL_Texture *getTexture() const { return textureInfo_.texture; }
 
 private:
+  TextureInfo textureInfo_;
+
   int elementWidth_;
 
   int elementHeight_;
-
-  TextureInfo textureInfo_{nullptr};
 
   int rows_{0};
 

@@ -1,25 +1,29 @@
 #include "move_action.h"
 #include "../actor.h"
-#include "../components/transform_component.h"
+#include "../game.h"
 #include "../map.h"
 
 namespace nsd {
-MoveAction::MoveAction(Actor *owner, const glm::ivec2 &direction)
-    : Action(owner), direction_(direction) {}
+MoveAction::MoveAction(const glm::ivec2 &direction) : direction_(direction) {}
 
-ActionResult MoveAction::perform(Map &map) {
-  const auto transform{getOwner()->getComponent<TransformComponent>()};
-  const auto &position{transform->getPosition()};
-  const auto newPosition{glm::ivec2{position.x + direction_.x, position.y + direction_.y}};
+ActionResult MoveAction::perform(Actor &actor, ActorCollection &actors, Map &map) {
+  actor.move(direction_);
 
-  if (!map.isWalkable(newPosition)) {
+  if (!map.isWalkable(actor.getPosition())) {
+    actor.move(-direction_);
+
     return {false, nullptr};
   }
 
-  transform->setPosition(newPosition);
-  map.computeFov(newPosition, 8);
+  if (actors.checkAny([&actor](const auto &other) { return other.blocks(actor); })) {
+    // replace this with an attack action
+    actor.move(-direction_);
 
-  getOwner()->spendEnergy(100);
+    return {false, nullptr};
+  }
+
+  actor.spendEnergy(100);
+  map.onActorMoved(actor);
 
   return {true, nullptr};
 }

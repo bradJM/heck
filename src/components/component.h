@@ -1,13 +1,14 @@
 #ifndef HECK_COMPONENT_H
 #define HECK_COMPONENT_H
 
-#include <cassert>
 #include <memory>
 
 namespace nsd {
 class Action;
 
 class Actor;
+
+class Game;
 
 class Graphics;
 
@@ -25,19 +26,10 @@ public:
 
   virtual std::unique_ptr<Action> produceAction() { return nullptr; }
 
-  virtual void render([[maybe_unused]] Graphics &graphics) {}
+  virtual void render([[maybe_unused]] const Actor &owner, [[maybe_unused]] Graphics &graphics) {}
 
 protected:
-  explicit Component(Actor *owner) : owner_(owner) {}
-
-  Actor *getOwner() {
-    assert(owner_ != nullptr);
-
-    return owner_;
-  }
-
-private:
-  Actor *owner_;
+  Component() = default;
 };
 } // namespace nsd
 

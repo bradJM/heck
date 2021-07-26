@@ -3,19 +3,23 @@ add_executable(
   WIN32
   main.cpp
   actor.cpp
+  actor_collection.cpp
+  actor_factory.cpp
+  archetype.cpp
   bitmask.cpp
   bsp_generator.cpp
   game.cpp
   graphics.cpp
   keyboard.cpp
   map.cpp
-  tileset.cpp
+  #actions/attack_action.cpp
   actions/move_action.cpp
-  actions/pass_action.cpp
+  actions/wait_action.cpp
   components/ai_component.cpp
+  #components/attacker_component.cpp
+  #components/defender_component.cpp
   components/keyboard_input_component.cpp
   components/sprite_component.cpp
-  components/transform_component.cpp
 )
 
 set_property(TARGET heck PROPERTY CXX_STANDARD 17)
@@ -35,6 +39,7 @@ find_package(sdl2-gfx CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(libtcod CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 target_link_libraries(
   heck
@@ -46,6 +51,7 @@ target_link_libraries(
   glm::glm
   libtcod::libtcod
   fmt::fmt
+  nlohmann_json::nlohmann_json
 )
 
 add_custom_command(

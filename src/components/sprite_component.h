@@ -5,17 +5,17 @@
 #include <glm/vec4.hpp>
 
 namespace nsd {
+class Actor;
+
 class Atlas;
 
 class SpriteComponent : public Component {
 public:
-  SpriteComponent(Actor *owner, Atlas *atlas, int spriteIndex, const glm::u8vec4 &color);
+  SpriteComponent(int spriteIndex, const glm::u8vec4 &color);
 
-  void render(Graphics &graphics) override;
+  void render(const Actor &owner, Graphics &graphics) override;
 
 private:
-  Atlas *atlas_;
-
   int spriteIndex_;
 
   glm::u8vec4 color_;

@@ -5,20 +5,11 @@
 #include <memory>
 
 namespace nsd {
-class Keyboard;
-
 class Action;
-
-class Actor;
 
 class KeyboardInputComponent : public Component {
 public:
-  KeyboardInputComponent(Actor *owner, Keyboard *keyboard);
-
   std::unique_ptr<Action> produceAction() override;
-
-private:
-  Keyboard *keyboard_;
 };
 } // namespace nsd
 

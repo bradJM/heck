@@ -1,11 +1,12 @@
 #ifndef HECK_MAP_H
 #define HECK_MAP_H
 
-#include "tileset.h"
+#include "actor_collection.h"
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #include <libtcod/fov.hpp>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace nsd {
@@ -13,19 +14,21 @@ class Actor;
 
 class Graphics;
 
-struct MapInfo {
-  glm::ivec2 playerStart{0};
+struct Tile {
+  int tileId;
 
-  std::vector<glm::ivec2> enemySpawns{};
+  bool isVisible;
 
-  int generatedRooms{0};
+  bool isExplored;
+
+  glm::ivec2 position;
+
+  glm::u8vec4 color;
 };
 
 class Map {
 public:
-  // TODO: This is really messy. Wrap the actor vector up and pass that instead or something.
-  Map(int width, int height, std::unique_ptr<Tileset> tileset,
-      const std::vector<std::unique_ptr<Actor>> *actors);
+  Map(int width, int height);
 
   bool isWalkable(const glm::ivec2 &position) const;
 
@@ -33,11 +36,17 @@ public:
 
   void computeFov(const glm::ivec2 &position, int radius);
 
+  void turn();
+
   void render(Graphics &graphics) const;
 
   void dig(int startX, int startY, int endX, int endY);
 
-  void createRoom(int startX, int startY, int endX, int endY);
+  Actor &addActor(Actor &&actor) { return actors_.add(std::move(actor)); }
+
+  void onPlayerAdded(const Actor &player);
+
+  void onActorMoved(const Actor &actor);
 
   int getWidth() const { return map_.getWidth(); }
 
@@ -46,11 +55,15 @@ public:
 private:
   TCODMap map_;
 
-  std::unique_ptr<Tileset> tileset_;
-
   std::vector<Tile> tiles_;
 
-  const std::vector<std::unique_ptr<Actor>> *actors_;
+  ActorCollection actors_{this};
+
+  bool isFovDirty_{true};
+
+  int playerId_{0};
+
+  glm::ivec2 playerPosition_{0};
 
   size_t getTileIndex(int x, int y) const;
 };

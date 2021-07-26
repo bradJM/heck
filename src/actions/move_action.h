@@ -7,9 +7,9 @@
 namespace nsd {
 class MoveAction : public Action {
 public:
-  MoveAction(Actor *owner, const glm::ivec2 &direction);
+  explicit MoveAction(const glm::ivec2 &direction);
 
-  ActionResult perform(Map &map) override;
+  ActionResult perform(Actor &actor, ActorCollection &actors, Map &map) override;
 
 private:
   glm::ivec2 direction_;

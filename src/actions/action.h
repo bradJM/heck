@@ -7,7 +7,11 @@
 namespace nsd {
 class Actor;
 
+class ActorCollection;
+
 class Action;
+
+class Game;
 
 class Map;
 
@@ -29,19 +33,10 @@ public:
 
   Action &operator=(Action &&other) = delete;
 
-  virtual ActionResult perform(Map &map) = 0;
+  virtual ActionResult perform(Actor &actor, ActorCollection &actors, Map &map) = 0;
 
 protected:
-  explicit Action(Actor *owner) : owner_(owner) {}
-
-  Actor *getOwner() {
-    assert(owner_ != nullptr);
-
-    return owner_;
-  }
-
-private:
-  Actor *owner_;
+  Action() = default;
 };
 } // namespace nsd
 
